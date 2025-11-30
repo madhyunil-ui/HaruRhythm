@@ -12,6 +12,7 @@ import GrowthPlant from "@/components/GrowthPlant";
 import { useLanguage } from "@/context/LanguageContext";
 import { getRecommendation, WeatherType, MoodType } from "@/lib/recommendation";
 
+
 export default function Home() {
   const [mood, setMood] = useState<string | null>(null);
   const { t, language } = useLanguage();
