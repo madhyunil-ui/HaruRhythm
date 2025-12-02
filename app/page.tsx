@@ -112,7 +112,7 @@ export default function Home() {
         <FocusTimerModal isOpen={!!activeTask} onClose={() => setActiveTask(null)} onComplete={handleTaskComplete} task={activeTask} weatherMain={weather?.type} />
       )}
 
-      {/* 👇 [핵심 전략] 여기에 모든 색깔을 미리 적어둬서 Tailwind가 강제로 읽게 만듭니다. (화면엔 안 보임) */}
+      {/* 👇 [핵심 전략] 설정 파일 없이 색깔을 강제로 인식시키는 코드 */}
       <div className="hidden from-orange-400 via-pink-500 to-yellow-500 from-teal-400 via-green-500 to-emerald-600 from-indigo-400 via-purple-500 to-blue-600 from-blue-400 via-slate-500 to-gray-600 from-red-400 via-orange-500 to-rose-600"></div>
 
     </motion.main>
