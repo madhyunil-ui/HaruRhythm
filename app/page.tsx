@@ -66,20 +66,18 @@ export default function Home() {
     }
   };
 
-  // 🎨 [핵심 수정] 색감을 아주 진하게(400~500번대) 바꿨습니다!
   const getMoodGradient = (currentMood: string | null) => {
     switch (currentMood) {
-      case 'Happy': return "from-orange-400 via-pink-500 to-yellow-500"; // 강렬한 노을빛
-      case 'Calm': return "from-teal-400 via-green-500 to-emerald-600"; // 깊은 숲속
-      case 'Tired': return "from-indigo-400 via-purple-500 to-blue-600"; // 신비로운 밤하늘
-      case 'Sad': return "from-blue-400 via-slate-500 to-gray-600";     // 짙은 새벽 안개
-      case 'Angry': return "from-red-400 via-orange-500 to-rose-600";   // 타오르는 에너지
-      default: return "from-gray-100 via-gray-200 to-gray-100";         // 기본
+      case 'Happy': return "from-orange-400 via-pink-500 to-yellow-500";
+      case 'Calm': return "from-teal-400 via-green-500 to-emerald-600";
+      case 'Tired': return "from-indigo-400 via-purple-500 to-blue-600";
+      case 'Sad': return "from-blue-400 via-slate-500 to-gray-600";
+      case 'Angry': return "from-red-400 via-orange-500 to-rose-600";
+      default: return "from-gray-100 via-gray-200 to-gray-100";
     }
   };
 
   return (
-    // ✨ 배경색이 변할 때 부드럽게(key 추가), 애니메이션은 빠르게(duration 6초)
     <motion.main
       key={mood}
       className={`min-h-screen flex items-center justify-center p-4 bg-gradient-to-br ${getMoodGradient(mood)}`}
@@ -90,7 +88,7 @@ export default function Home() {
         backgroundPosition: ["0% 0%", "100% 100%", "0% 0%"],
       }}
       transition={{
-        duration: 6, // 6초마다 움직임 (눈에 확 띔)
+        duration: 6,
         ease: "easeInOut",
         repeat: Infinity,
         repeatType: "mirror"
@@ -102,32 +100,21 @@ export default function Home() {
 
         <div className="mt-6 space-y-6">
           <InsightCard mood={mood} insight={recommendation.insight} />
-
-          <ChecklistCard
-            mood={mood}
-            tasks={recommendation.tasks}
-            onTaskClick={(task) => setActiveTask(task)}
-            externalCompleted={completedTasks}
-          />
-
+          <ChecklistCard mood={mood} tasks={recommendation.tasks} onTaskClick={(task) => setActiveTask(task)} externalCompleted={completedTasks} />
           {mood && <GrowthPlant xp={totalXP} />}
         </div>
-
         {!mood && <div className="mt-12 text-center text-gray-500 text-sm font-medium"><p>{t.home.selectMood}</p></div>}
       </div>
 
       <WeatherMate weather={weather} mood={mood} mbti={mbti} />
 
       {activeTask && (
-        <FocusTimerModal
-          isOpen={!!activeTask}
-          onClose={() => setActiveTask(null)}
-          onComplete={handleTaskComplete}
-          task={activeTask}
-          weatherMain={weather?.type}
-        />
+        <FocusTimerModal isOpen={!!activeTask} onClose={() => setActiveTask(null)} onComplete={handleTaskComplete} task={activeTask} weatherMain={weather?.type} />
       )}
+
+      {/* 👇 [핵심 전략] 여기에 모든 색깔을 미리 적어둬서 Tailwind가 강제로 읽게 만듭니다. (화면엔 안 보임) */}
+      <div className="hidden from-orange-400 via-pink-500 to-yellow-500 from-teal-400 via-green-500 to-emerald-600 from-indigo-400 via-purple-500 to-blue-600 from-blue-400 via-slate-500 to-gray-600 from-red-400 via-orange-500 to-rose-600"></div>
+
     </motion.main>
   );
 }
-
