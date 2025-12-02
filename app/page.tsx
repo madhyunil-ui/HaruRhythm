@@ -9,6 +9,7 @@ import ChecklistCard from "@/components/ChecklistCard";
 import WeatherMate from "@/components/WeatherMate";
 import FocusTimerModal from "@/components/FocusTimerModal";
 import GrowthPlant from "@/components/GrowthPlant";
+import SettingsModal from "@/components/SettingsModal";
 import { useLanguage } from "@/context/LanguageContext";
 import { getRecommendation, WeatherType, MoodType } from "@/lib/recommendation";
 
@@ -21,6 +22,7 @@ export default function Home() {
   const [activeTask, setActiveTask] = useState<any>(null);
   const [completedTasks, setCompletedTasks] = useState<string[]>([]);
   const [totalXP, setTotalXP] = useState(0);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   useEffect(() => {
     const savedXP = localStorage.getItem("haru_rhythm_xp");
@@ -87,15 +89,10 @@ export default function Home() {
         backgroundSize: ["100% 100%", "200% 200%", "100% 100%"],
         backgroundPosition: ["0% 0%", "100% 100%", "0% 0%"],
       }}
-      transition={{
-        duration: 6,
-        ease: "easeInOut",
-        repeat: Infinity,
-        repeatType: "mirror"
-      }}
+      transition={{ duration: 6, ease: "easeInOut", repeat: Infinity, repeatType: "mirror" }}
     >
       <div className="w-full max-w-md bg-white/80 backdrop-blur-2xl rounded-[3rem] shadow-2xl border-4 border-white/50 overflow-hidden relative pb-10">
-        <Header />
+        <Header onSettingsClick={() => setIsSettingsOpen(true)} />
         <HeroSection selectedMood={mood} onMoodSelect={(m) => setMood(m)} weather={weather} mbti={mbti} />
 
         <div className="mt-6 space-y-6">
@@ -106,15 +103,16 @@ export default function Home() {
         {!mood && <div className="mt-12 text-center text-gray-500 text-sm font-medium"><p>{t.home.selectMood}</p></div>}
       </div>
 
+      {/* 👇 [수정] 여기가 문제였습니다. mbti={mbti} 라고 명확하게 적어야 합니다. */}
       <WeatherMate weather={weather} mood={mood} mbti={mbti} />
 
       {activeTask && (
         <FocusTimerModal isOpen={!!activeTask} onClose={() => setActiveTask(null)} onComplete={handleTaskComplete} task={activeTask} weatherMain={weather?.type} />
       )}
 
-      {/* 👇 [핵심 전략] 설정 파일 없이 색깔을 강제로 인식시키는 코드 */}
-      <div className="hidden from-orange-400 via-pink-500 to-yellow-500 from-teal-400 via-green-500 to-emerald-600 from-indigo-400 via-purple-500 to-blue-600 from-blue-400 via-slate-500 to-gray-600 from-red-400 via-orange-500 to-rose-600"></div>
+      <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
 
+      <div className="hidden from-orange-400 via-pink-500 to-yellow-500 from-teal-400 via-green-500 to-emerald-600 from-indigo-400 via-purple-500 to-blue-600 from-blue-400 via-slate-500 to-gray-600 from-red-400 via-orange-500 to-rose-600"></div>
     </motion.main>
   );
 }
