@@ -6,7 +6,7 @@ import Link from "next/link";
 
 // 👇 부모에게 "나 클릭됐어!"라고 알리는 기능 정의
 interface HeaderProps {
-    onSettingsClick?: () => void;
+    onSettingsClick: () => void;
 }
 
 export default function Header({ onSettingsClick }: HeaderProps) {
