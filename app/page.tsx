@@ -103,7 +103,7 @@ export default function Home() {
         {!mood && <div className="mt-12 text-center text-gray-500 text-sm font-medium"><p>{t.home.selectMood}</p></div>}
       </div>
 
-      {/* 👇 [수정] 여기가 문제였습니다. mbti={mbti} 라고 명확하게 적어야 합니다. */}
+
       <WeatherMate weather={weather} mood={mood} mbti={mbti} />
 
       {activeTask && (
