@@ -1,0 +1,8 @@
+To run the Haru Rhythm ChatBot, you need to configure your Google Gemini API Key.
+
+1. Create a file named `.env.local` in the root directory (c:\HaruRhythm).
+2. Add the following line to the file:
+
+GOOGLE_GEMINI_API_KEY=YOUR_ACTUAL_API_KEY_HERE
+
+3. Restart the development server if it is running.
