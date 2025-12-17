@@ -18,15 +18,9 @@
     "clsx": "^2.1.1",
     "framer-motion": "^12.23.25",
     "lucide-react": "^0.555.0",
-<<<<<<< HEAD
-    "next": "latest",
-    "react": "latest",
-    "react-dom": "latest",
-=======
     "next": "16.0.7",
     "react": "19.2.0",
     "react-dom": "19.2.0",
->>>>>>> a146dec0897e1235012f1a5c96873410ae4f601a
     "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {
