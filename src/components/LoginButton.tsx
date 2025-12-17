@@ -1,9 +1,9 @@
 "use client"; // 클라이언트(브라우저)에서 작동한다는 표시
 
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createClient } from "@supabase/supabase-js";
 
 export default function LoginButton() {
-    const supabase = createClientComponentClient();
+    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
 
     // 구글 로그인 함수
     const handleGoogleLogin = async () => {
