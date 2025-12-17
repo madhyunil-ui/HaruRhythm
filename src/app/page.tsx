@@ -4,6 +4,10 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Play, Pause, Settings, X, CheckCircle, Globe, Check, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import confetti from "canvas-confetti";
+import ExternalBanner from "../components/ExternalBanner";
+// Supabase 관련 기능 추가 (문지기)
+// Supabase 관련 기능 추가 (문지기)
+import { createClient, Session } from '@supabase/supabase-js';
 
 // --- Types ---
 type MoodType = "Happy" | "Calm" | "Tired" | "Sad" | "Angry";
@@ -114,6 +118,8 @@ const CalendarModal = ({ isOpen, onClose, history }: { isOpen: boolean; onClose:
           {Array.from({ length: firstDay }).map((_, i) => <div key={`empty-${i}`} />)}
           {Array.from({ length: days }).map((_, i) => {
             const day = i + 1;
+            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            const record = history.find(h => h.date === dateStr);
             return (
               <div key={day} className="aspect-square flex items-center justify-center bg-white rounded-xl border border-gray-100 text-sm text-gray-600 relative">
                 <span className="absolute top-1 left-1 text-[10px] text-gray-300">{day}</span>
@@ -187,6 +193,72 @@ const FocusTimerModal = ({ isOpen, onClose, onComplete, task, mood }: any) => {
 const SettingsModal = ({ isOpen, onClose, onComplete }: any) => {
   const [step, setStep] = useState(0);
   const [sel, setSel] = useState<string[]>([]);
+
+  const qs = [
+    // E vs I
+    { l: "에너지 (Energy) 1/2", o: [{ t: "친구들과 수다떨며 충전", v: "E" }, { t: "혼자만의 시간으로 충전", v: "I" }] },
+    { l: "에너지 (Energy) 2/2", o: [{ t: "생각나는 대로 바로 말함", v: "E" }, { t: "생각을 정리한 뒤 말함", v: "I" }] },
+    // S vs N
+    { l: "인식 (Mind) 1/2", o: [{ t: "오감과 실제 경험 의존", v: "S" }, { t: "직관과 영감에 의존", v: "N" }] },
+    { l: "인식 (Mind) 2/2", o: [{ t: "현재와 현실에 집중", v: "S" }, { t: "미래와 가능성에 집중", v: "N" }] },
+    // T vs F
+    { l: "판단 (Heart) 1/2", o: [{ t: "논리와 사실 중심 판단", v: "T" }, { t: "사람과 관계 중심 판단", v: "F" }] },
+    { l: "판단 (Heart) 2/2", o: [{ t: "친구가 우울하면 해결책 제시", v: "T" }, { t: "우선 공감하고 위로함", v: "F" }] },
+    // J vs P
+    { l: "생활 (Life) 1/2", o: [{ t: "여행은 철저하게 계획", v: "J" }, { t: "발길 닿는 대로 즉흥적", v: "P" }] },
+    { l: "생활 (Life) 2/2", o: [{ t: "일은 미리미리 끝냄", v: "J" }, { t: "임박했을 때 스퍼트", v: "P" }] }
+  ];
+
+  const calculateMBTI = (answers: string[]) => {
+    const counts: Record<string, number> = { E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0 };
+    answers.forEach(a => counts[a] = (counts[a] || 0) + 1);
+
+    // Tie-breaker: defaults to E, S, T, J if counts are equal
+    const m1 = counts['E'] >= counts['I'] ? 'E' : 'I';
+    const m2 = counts['S'] >= counts['N'] ? 'S' : 'N';
+    const m3 = counts['T'] >= counts['F'] ? 'T' : 'F';
+    const m4 = counts['J'] >= counts['P'] ? 'J' : 'P';
+
+    return m1 + m2 + m3 + m4;
+  };
+
+  const handleSelect = (val: string) => {
+    const n = [...sel, val]; setSel(n);
+    if (step < 7) {
+      setStep(step + 1);
+    } else {
+      const result = calculateMBTI(n);
+      onComplete(result);
+      onClose();
+      setStep(0);
+      setSel([]);
+    }
+  };
+
+  if (!isOpen) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm">
+      <div className="bg-white w-full max-w-sm p-8 rounded-3xl shadow-2xl relative">
+        <div className="flex justify-between mb-6">
+          <h3 className="font-bold text-gray-800">성향 체크 ({step + 1}/{qs.length})</h3>
+          <button onClick={onClose}><X size={24} className="text-gray-400" /></button>
+        </div>
+        <h4 className="text-xl font-bold text-center mb-10 text-[#D4E157]">{qs[step].l}</h4>
+        <div className="space-y-4">
+          {qs[step].o.map(o => (
+            <button key={o.v} onClick={() => handleSelect(o.v)} className="w-full p-5 border-2 border-gray-100 rounded-2xl hover:border-[#D4E157] hover:bg-[#F9FBE7] text-left font-bold text-gray-600 flex justify-between transition-all">
+              <span className="text-sm">{o.t}</span><span className="text-gray-300 font-mono text-lg">{o.v}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const OnboardingModal = ({ isOpen, onComplete }: any) => {
+  const [step, setStep] = useState(0);
+  const [sel, setSel] = useState<string[]>([]);
   const qs = [
     { l: "에너지 (Energy)", o: [{ t: "사람들과 함께", v: "E" }, { t: "혼자만의 시간", v: "I" }] },
     { l: "인식 (Mind)", o: [{ t: "현실적", v: "S" }, { t: "직관/상상", v: "N" }] },
@@ -195,13 +267,24 @@ const SettingsModal = ({ isOpen, onClose, onComplete }: any) => {
   ];
   const handleSelect = (val: string) => {
     const n = [...sel, val]; setSel(n);
-    if (step < 3) setStep(step + 1); else { onComplete(n.join("")); onClose(); setStep(0); setSel([]); }
+    if (step < 3) {
+      setStep(step + 1);
+    } else {
+      onComplete(n.join(""));
+      setStep(0);
+      setSel([]);
+    }
   };
+
   if (!isOpen) return null;
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-4 backdrop-blur-md">
       <div className="bg-white w-full max-w-sm p-8 rounded-3xl shadow-2xl relative">
-        <div className="flex justify-between mb-6"><h3 className="font-bold text-gray-800">성향 체크 ({step + 1}/4)</h3><button onClick={onClose}><X size={24} className="text-gray-400" /></button></div>
+        <div className="flex justify-between mb-6">
+          <h3 className="font-bold text-gray-800">환영합니다! ({step + 1}/4)</h3>
+          {/* No 'Close' button as this is mandatory */}
+        </div>
         <h4 className="text-2xl font-bold text-center mb-10 text-[#D4E157]">{qs[step].l}</h4>
         <div className="space-y-4">
           {qs[step].o.map(o => (
@@ -216,6 +299,10 @@ const SettingsModal = ({ isOpen, onClose, onComplete }: any) => {
 };
 
 export default function Home() {
+  // [1] 로그인 세션 상태 추가
+  const [session, setSession] = useState<Session | null>(null);
+  const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
+
   const [mood, setMood] = useState<MoodType | null>(null);
   const [weather, setWeather] = useState<any>(null);
   const [mbti, setMbti] = useState<string | null>(null);
@@ -228,8 +315,25 @@ export default function Home() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [toast, setToast] = useState<string | null>(null); // Toast message state
+  useEffect(() => {
+    // Auto-Onboarding: Check conditions
+    // 1. Logged in (session exists)
+    // 2. No MBTI state
+    // 3. No MBTI in localStorage
+    const localMbti = localStorage.getItem("mbti");
+    if (session && !mbti && !localMbti) {
+      setIsSettingsOpen(true);
+    }
+  }, [session, mbti]);
 
   useEffect(() => {
+    // [2] 페이지 로드 시 로그인 여부 체크
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setSession(session);
+    };
+    checkSession();
+
     if (typeof window !== 'undefined') {
       const savedMbti = localStorage.getItem("mbti");
       if (savedMbti) setMbti(savedMbti);
@@ -262,9 +366,11 @@ export default function Home() {
       }
 
       navigator.geolocation?.getCurrentPosition(async p => {
-        const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${p.coords.latitude}&lon=${p.coords.longitude}&units=metric&appid=${process.env.NEXT_PUBLIC_WEATHER_API_KEY}`);
-        const data = await res.json();
-        setWeather({ temp: Math.round(data.main.temp), city: data.name, icon: data.weather[0].icon, type: data.weather[0].main });
+        try {
+          const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${p.coords.latitude}&lon=${p.coords.longitude}&units=metric&appid=${process.env.NEXT_PUBLIC_WEATHER_API_KEY}`);
+          const data = await res.json();
+          setWeather({ temp: Math.round(data.main.temp), city: data.name, icon: data.weather[0].icon, type: data.weather[0].main });
+        } catch (e) { console.error("Weather error", e); }
       });
     }
   }, []);
@@ -319,6 +425,16 @@ export default function Home() {
     }
   };
 
+  // 로그인 버튼 핸들러
+  const handleLogin = async () => {
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${location.origin}/auth/callback`,
+      },
+    });
+  };
+
   // 기분에 따른 배경색 변경 로직 (더 확실한 색감)
   const getBgColor = () => {
     switch (mood) {
@@ -331,6 +447,26 @@ export default function Home() {
     }
   };
 
+  // [3] 로그인이 안 되어 있으면 => 로그인 화면(문)을 보여줌
+  if (!session) {
+    return (
+      <main className="min-h-screen w-full flex items-center justify-center bg-[#FDFBF7]">
+        <div className="text-center p-8 bg-white rounded-3xl shadow-xl border border-[#EBE9E1]">
+          <h1 className="text-3xl font-serif font-bold text-[#556B2F] mb-2">Haru Rhythm</h1>
+          <p className="text-gray-500 mb-8">당신의 하루를 기록하고 치유하세요</p>
+          <button
+            onClick={handleLogin}
+            className="flex items-center gap-3 bg-white border border-gray-300 px-6 py-4 rounded-xl shadow-sm hover:bg-gray-50 transition-all active:scale-95"
+          >
+            <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-6 h-6" alt="google" />
+            <span className="font-bold text-gray-700">Google로 시작하기</span>
+          </button>
+        </div>
+      </main>
+    );
+  }
+
+  // [4] 로그인이 되어 있으면 => 원래 앱(집 안)을 보여줌
   return (
     <main className={`min-h-screen w-full flex items-center justify-center transition-colors duration-1000 ${getBgColor()}`}>
       <div className="w-full max-w-md bg-[#FDFBF7]/90 backdrop-blur-xl rounded-[2.5rem] shadow-2xl overflow-hidden min-h-[850px] relative flex flex-col border border-white/60">
@@ -405,6 +541,8 @@ export default function Home() {
               <div className="text-5xl drop-shadow-md filter transition-all duration-500">{doneTasks.length === 0 ? "🌱" : doneTasks.length < 3 ? "🌿" : doneTasks.length < 5 ? "🌷" : "🌸"}</div>
             </div>
           )}
+
+          <ExternalBanner />
         </div>
 
         {/* Toast Notification */}
@@ -417,9 +555,10 @@ export default function Home() {
         </AnimatePresence>
 
         <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} onComplete={(val: string) => { localStorage.setItem("mbti", val); setMbti(val); }} />
+
         <CalendarModal isOpen={isCalendarOpen} onClose={() => setIsCalendarOpen(false)} history={history} />
         <FocusTimerModal isOpen={!!activeTask} onClose={() => setActiveTask(null)} onComplete={handleComplete} task={activeTask} mood={mood} />
       </div>
-    </main>
+    </main >
   );
 }
