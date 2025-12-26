@@ -1,6 +1,7 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { SoundProvider } from "../context/SoundContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,6 +25,21 @@ export const metadata: Metadata = {
     type: "website",
     locale: "ko_KR",
   },
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "하루리듬",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#FDFBF7",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
@@ -36,7 +52,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <SoundProvider>
+          {children}
+        </SoundProvider>
       </body>
     </html>
   );
