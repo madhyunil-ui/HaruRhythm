@@ -1,7 +1,8 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
-import { Howl } from 'howler';
+import { Howl, Howler } from 'howler';
+import { App } from '@capacitor/app';
 
 export type SoundId = 'rain' | 'forest' | 'river' | 'ocean' | 'bgm';
 
@@ -52,6 +53,29 @@ export const SoundProvider = ({ children }: { children: React.ReactNode }) => {
     });
 
     const [isMuted, setIsMuted] = useState(false);
+    const isMutedRef = useRef(false);
+
+    // Sync ref with state for listener access
+    useEffect(() => {
+        isMutedRef.current = isMuted;
+    }, [isMuted]);
+
+    // App Lifecycle Listener for Audio
+    useEffect(() => {
+        const listener = App.addListener('appStateChange', ({ isActive }) => {
+            if (!isActive) {
+                // Background: Mute all audio
+                Howler.mute(true);
+            } else {
+                // Foreground: Restore user preference
+                Howler.mute(isMutedRef.current);
+            }
+        });
+
+        return () => {
+            listener.then(handler => handler.remove());
+        };
+    }, []);
 
     useEffect(() => {
         // Initialize Howls
