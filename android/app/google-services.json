@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "563614366390",
+    "project_id": "harurhythm",
+    "storage_bucket": "harurhythm.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:563614366390:android:46c73aa7356231d4c3c417",
+        "android_client_info": {
+          "package_name": "com.harurhythm.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD5GebdtgsXACiNTpm0uzlEeIrij36MV54"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

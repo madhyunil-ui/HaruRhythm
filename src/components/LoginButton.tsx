@@ -2,16 +2,25 @@
 
 import { createClient } from "@supabase/supabase-js";
 
+import { Capacitor } from "@capacitor/core";
+
 export default function LoginButton() {
     const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
 
     // 구글 로그인 함수
     const handleGoogleLogin = async () => {
+        const redirectTo = Capacitor.isNativePlatform()
+            ? "com.harurhythm.app://google-auth"
+            : `${location.origin}/auth/callback`;
+
         await supabase.auth.signInWithOAuth({
             provider: "google",
             options: {
-                // 로그인 성공 후 돌아올 주소 (자동으로 처리됨)
-                redirectTo: `${location.origin}/auth/callback`,
+                redirectTo,
+                queryParams: {
+                    access_type: "offline",
+                    prompt: "consent",
+                },
             },
         });
     };
