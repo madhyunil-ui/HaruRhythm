@@ -64,11 +64,46 @@ export const SoundProvider = ({ children }: { children: React.ReactNode }) => {
     useEffect(() => {
         const listener = App.addListener('appStateChange', ({ isActive }) => {
             if (!isActive) {
-                // Background: Mute all audio
-                Howler.mute(true);
+                // Background: Pause all currently playing sounds
+                Object.values(howls.current).forEach(howl => {
+                    if (howl && howl.playing()) {
+                        howl.pause();
+                        // Mark as paused by system so we can resume later
+                        (howl as any)._systemPaused = true;
+                    }
+                });
+                setSoundStates(prev => {
+                    const next = { ...prev };
+                    Object.keys(next).forEach(key => {
+                        const k = key as SoundId;
+                        if (next[k].isPlaying) {
+                            next[k] = { ...next[k], isPlaying: false };
+                        }
+                    });
+                    return next;
+                });
             } else {
-                // Foreground: Restore user preference
-                Howler.mute(isMutedRef.current);
+                // Foreground: Resume sounds that were paused by system
+                const playingUpdates: Record<string, boolean> = {};
+
+                Object.entries(howls.current).forEach(([key, howl]) => {
+                    if (howl && (howl as any)._systemPaused) {
+                        howl.play();
+                        // Restore fade/volume if needed, though pause/play usually keeps it
+                        howl.fade(0, soundStates[key as SoundId].volume || 0.5, 1000);
+                        (howl as any)._systemPaused = false;
+                        playingUpdates[key] = true;
+                    }
+                });
+
+                setSoundStates(prev => {
+                    const next = { ...prev };
+                    Object.keys(playingUpdates).forEach(key => {
+                        const k = key as SoundId;
+                        next[k] = { ...next[k], isPlaying: true };
+                    });
+                    return next;
+                });
             }
         });
 

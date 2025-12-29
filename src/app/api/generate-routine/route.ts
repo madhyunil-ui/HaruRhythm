@@ -5,8 +5,10 @@ export async function POST(req: Request) {
     try {
         const { mood, personality, weather } = await req.json();
 
-        const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+        const apiKey = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.OPENAI_API_KEY;
+
         if (!apiKey) {
+            console.error("API Key missing. Checked: GEMINI_API_KEY, NEXT_PUBLIC_GEMINI_API_KEY, OPENAI_API_KEY");
             return NextResponse.json({ error: "Server API Key Missing" }, { status: 500 });
         }
 
