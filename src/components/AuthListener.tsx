@@ -14,7 +14,7 @@ export default function AuthListener() {
 
     useEffect(() => {
         // 앱 딥링크 리스너 (로그인 성공 후 앱으로 복귀 시 실행)
-        const listener = App.addListener("appUrlOpen", async (data) => {
+        const urlListener = App.addListener("appUrlOpen", async (data) => {
             // URL 확인: com.harurhythm.app://google-auth#access_token=...
             if (data.url.startsWith("com.harurhythm.app://")) {
                 // URL에서 해시(#) 이후 파라미터 파싱
@@ -45,8 +45,29 @@ export default function AuthListener() {
             }
         });
 
+        // 앱 상태 변경 리스너 (백그라운드 전환 시 오디오 중지)
+        const appStateListener = App.addListener('appStateChange', ({ isActive }) => {
+            if (!isActive) {
+                // 앱이 비활성화(백그라운드)되면 모든 오디오 요소 정지
+                const audios = document.querySelectorAll('audio');
+                audios.forEach(audio => {
+                    try {
+                        audio.pause();
+                    } catch (e) {
+                        console.error("Error pausing audio:", e);
+                    }
+                });
+                console.log("App went to background, paused all audio.");
+            }
+        });
+
+        // IMPORTANT: Google Console Redirect URI Check
+        // Ensure this URI is registered in Google Cloud Console > APIs & Services > Credentials
+        // URI: https://zlbcopydgwftcbcyuuu.supabase.co/auth/v1/callback
+
         return () => {
-            listener.then((handler) => handler.remove());
+            urlListener.then((handler) => handler.remove());
+            appStateListener.then((handler) => handler.remove());
         };
     }, [router, supabase.auth]);
 
